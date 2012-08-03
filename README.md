@@ -1,8 +1,7 @@
 pretty-sorts
 ============
 
-Building
---------
+Building:
 
     make
     ./gl
