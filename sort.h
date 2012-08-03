@@ -14,7 +14,7 @@ int  compare  (buf *buf, int a, int b);
 void swap     (buf *buf, int a, int b);
 void insert   (buf *buf, int a, int b);
 
-
+int rand_from(int low, int high);
 extern void sample(float cost);
 void run_sorts();
 

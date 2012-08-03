@@ -330,7 +330,21 @@ void *file_contents(const char *filename, GLint *length) {
 static GLuint make_lut()
 {
 	unsigned char *lutData = malloc(1024);
-	FILE *f = fopen("hotiron.bin", "rb");
+	FILE *f;
+	switch (rand_from(0,3)) {
+	case 0:
+		f = fopen("hotiron.bin", "rb");
+		break;
+	case 1:
+		f = fopen("rainbow.bin", "rb");
+		break;
+	case 2:
+		f = fopen("geographic.bin", "rb");
+		break;
+	case 3:
+		f = fopen("ge.bin", "rb");
+		break;
+	}
 	unsigned char c;
 	int i = 0;
 	while(i < 256) {
