@@ -333,16 +333,16 @@ static GLuint make_lut()
 	FILE *f;
 	switch (rand_from(0,3)) {
 	case 0:
-		f = fopen("hotiron.bin", "rb");
+		f = fopen("luts/hotiron.bin", "rb");
 		break;
 	case 1:
-		f = fopen("rainbow.bin", "rb");
+		f = fopen("luts/rainbow.bin", "rb");
 		break;
 	case 2:
-		f = fopen("geographic.bin", "rb");
+		f = fopen("luts/geographic.bin", "rb");
 		break;
 	case 3:
-		f = fopen("ge.bin", "rb");
+		f = fopen("luts/ge.bin", "rb");
 		break;
 	}
 	unsigned char c;

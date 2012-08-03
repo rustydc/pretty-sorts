@@ -191,7 +191,6 @@ void run_sorts(buf *buf) {
 			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		case 3:
-			fisher_yates_shuffle(buf, 0, buf->length-1);
 			printf("Selection Sort.\n");
 			selection_sort(buf, 0, buf->length-1);
 			fisher_yates_shuffle(buf, 0, buf->length-1);
