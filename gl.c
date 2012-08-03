@@ -13,7 +13,7 @@
 
 extern void glutMainLoopEvent(void);
 
-#define T 512
+#define T 1024
 
 static void render();
 static int make_resources();
@@ -100,11 +100,12 @@ void sample(float cost) {
 	samples++;
 
 
-	if (samples % 3 != 0) { return; };
+//	if (samples % 3 != 0) { return; };
 
 	for (int i = 0; i != b->length; i++) {
 		// New index = (3 * i) + (3 * T)
-		int index = 3 * ((t+1)%T) + 3 * i * b->length;
+		//int index = 3 * ((t+1)%T) + 3 * i * b->length;
+		int index = 3 * ((t+1)%T) + 3 * i * T;
 		float scale = (float)256/(b->length);
 		// Copy each short to an RGB triple.
 		buffer[index] = b->data[i] * scale;
@@ -114,16 +115,6 @@ void sample(float cost) {
 
 	if (++t == T) {
 		t = 0;
-	}
-
-/*	if (samples % 15 == 0) {
-		fwrite(data[t+1], sizeof(unsigned short), (T - t - 1) * N, f);
-		fwrite(data, sizeof(unsigned short), (t + 1) * N, f);
-	}
-*/
-
-	if (samples % 100 == 0) {	
-		printf("%d samples.\n", samples);
 	}
 
 	glutMainLoopEvent();
@@ -179,7 +170,7 @@ int numFrames = 0;
 
 static void render(void)
 {
-	if (numFrames++ == 100) {
+/*	if (numFrames++ == 100) {
 		gettimeofday(&end, NULL);
 		printf("FPS: %f\n", 1000000.0 * 100.0 / ((end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec)) ) ;
 		numFrames = 0;
@@ -187,7 +178,7 @@ static void render(void)
 	if (numFrames == 0) {
 		gettimeofday(&start, NULL);
 	}
-
+*/
 	glUseProgram(g_resources.program);
 
 	glActiveTexture(GL_TEXTURE0);
