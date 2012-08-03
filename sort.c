@@ -30,7 +30,7 @@ void swap(buf *buf, int a, int b) {
 
 // Generate a random number between 'low' and 'high', 
 int rand_from(int low, int high) {
-	return low + rand() % (high - low);
+	return low + rand() % (1 + high - low);
 }
 
 // Shuffle the whole array
@@ -168,21 +168,28 @@ void run_sorts(buf *buf) {
 	fill(buf);
 
 	while(1) {
-		printf("Shuffle.\n");
-		fisher_yates_shuffle(buf, 0, buf->length-1);
-		printf("Insertion Sort.\n");
-		insertion_sort(buf, 0, buf->length-1);
-		printf("Shuffle.\n");
-		fisher_yates_shuffle(buf, 0, buf->length-1);
-		printf("Quicksort.\n");
-		quick_sort(buf, 0, buf->length-1);
-		printf("Shuffle.\n");
-		fisher_yates_shuffle(buf, 0, buf->length-1);
-		printf("Heap Sort.\n");
-		heap_sort(buf, 0, buf->length-1);
-		printf("Shuffle.\n");
-		fisher_yates_shuffle(buf, 0, buf->length-1);
-		printf("Selection Sort.\n");
-		selection_sort(buf, 0, buf->length-1);
+		int r = rand_from(0, 3);
+		switch (r) {
+		case 0:
+			fisher_yates_shuffle(buf, 0, buf->length-1);
+			printf("Insertion Sort.\n");
+			insertion_sort(buf, 0, buf->length-1);
+			break;
+		case 1:
+			fisher_yates_shuffle(buf, 0, buf->length-1);
+			printf("Quick Sort.\n");
+			quick_sort(buf, 0, buf->length-1);
+			break;
+		case 2:
+			fisher_yates_shuffle(buf, 0, buf->length-1);
+			printf("Heap Sort.\n");
+			heap_sort(buf, 0, buf->length-1);
+			break;
+		case 3:
+			fisher_yates_shuffle(buf, 0, buf->length-1);
+			printf("Selection Sort.\n");
+			selection_sort(buf, 0, buf->length-1);
+			break;
+		}
 	}
 }
