@@ -102,7 +102,7 @@ void sample(float cost) {
 	samples++;
 
 
-//	if (samples % 3 != 0) { return; };
+	if (samples % 4 != 0) { return; };
 
 	for (int i = 0; i != b->length; i++) {
 		// New index = (3 * i) + (3 * T)
@@ -192,7 +192,7 @@ static void render(void)
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_1D, g_resources.lut);
-	glUniform1i(g_resources.uniforms.lut, 0);
+	glUniform1i(g_resources.uniforms.lut, 1);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, g_resources.textures[0]);
@@ -240,8 +240,8 @@ static GLuint make_texture(GLbyte* buf) {
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 

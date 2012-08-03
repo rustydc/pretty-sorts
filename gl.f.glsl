@@ -11,5 +11,5 @@ void main() {
 	vec2 current = vec2(mod(offset * 1.0, 1.0), texcoord.y);
 
 	vec4 tmp = texcoord.x > 0.9 ? (texcoord.x < 0.905 ? vec4(0,0,0,1) : texture2D(textures[0], current) ) : texture2D(textures[0], history);
-	gl_FragColor = texture1D(lut, tmp.r); //texture1D(lut, tmp.r);
+	gl_FragColor = texture1D(lut, tmp.r);
 }
