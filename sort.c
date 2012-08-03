@@ -81,6 +81,8 @@ void insert(buf *buf, int a, int b) {
 	}
 	buf->data[i + 1] = val;
 	sample(1.0);
+	sample(1.0);
+	sample(1.0);
 }
 
 void insertion_sort(buf *buf, int low, int high) {
@@ -96,6 +98,8 @@ int select_min(buf *buf, int low, int high) {
 			min = i;
 		}
 	}
+	sample(1.0);
+	sample(1.0);
 	return min;
 }
 
@@ -166,29 +170,31 @@ int main (int argc, char **argv) {
 
 void run_sorts(buf *buf) {
 	fill(buf);
+	fisher_yates_shuffle(buf, 0, buf->length-1);
 
 	while(1) {
 		int r = rand_from(0, 3);
 		switch (r) {
 		case 0:
-			fisher_yates_shuffle(buf, 0, buf->length-1);
 			printf("Insertion Sort.\n");
 			insertion_sort(buf, 0, buf->length-1);
+			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		case 1:
-			fisher_yates_shuffle(buf, 0, buf->length-1);
 			printf("Quick Sort.\n");
 			quick_sort(buf, 0, buf->length-1);
+			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		case 2:
-			fisher_yates_shuffle(buf, 0, buf->length-1);
 			printf("Heap Sort.\n");
 			heap_sort(buf, 0, buf->length-1);
+			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		case 3:
 			fisher_yates_shuffle(buf, 0, buf->length-1);
 			printf("Selection Sort.\n");
 			selection_sort(buf, 0, buf->length-1);
+			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		}
 	}
