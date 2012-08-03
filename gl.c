@@ -11,7 +11,6 @@
 
 #include "sort.h"
 
-
 extern void glutMainLoopEvent(void);
 
 #define T 512
@@ -62,7 +61,12 @@ static const GLfloat g_vertex_buffer_data[] = {
 };
 static const GLushort g_element_buffer_data[] = {0, 1, 2, 3};
 
+buf *b; 
 int main(int argc, char **argv) {
+	b = malloc(sizeof(buf));
+	b->data = malloc(sizeof(uint16_t) * 512);
+	b->length = 512;
+	memset(b->data, 0, b->length);
 
 	memset(buffer, T*N*3, 0);
 
@@ -83,7 +87,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	run_sorts();
+	run_sorts(b);
 	//glutMainLoop();
 	printf("Done.\n");
 
@@ -98,14 +102,14 @@ void sample(float cost) {
 
 	if (samples % 3 != 0) { return; };
 
-	for (int i = 0; i != N; i++) {
+	for (int i = 0; i != b->length; i++) {
 		// New index = (3 * i) + (3 * T)
-		int index = 3 * ((t+1)%T) + 3 * i * N;
-		float scale = (float)256/N;
+		int index = 3 * ((t+1)%T) + 3 * i * b->length;
+		float scale = (float)256/(b->length);
 		// Copy each short to an RGB triple.
-		buffer[index] = data[i] * scale;
-		buffer[index+1] = data[i] * scale;
-		buffer[index+2] = data[i] * scale;
+		buffer[index] = b->data[i] * scale;
+		buffer[index+1] = b->data[i] * scale;
+		buffer[index+2] = b->data[i] * scale;
 	}
 
 	if (++t == T) {
