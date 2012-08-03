@@ -18,6 +18,7 @@ extern void glutMainLoopEvent(void);
 static void render();
 static int make_resources();
 static GLuint make_texture(GLbyte* buf);
+static GLuint make_lut();
 static GLuint make_buffer(
 	GLenum target,
 	const void *buffer_data,
@@ -36,6 +37,7 @@ GLbyte buffer[T*N*3];
 static struct {
 	GLuint vertex_buffer, element_buffer;
 	GLuint textures[1];
+	GLuint lut;
 	GLuint vertex_shader, fragment_shader, program;
 
 	GLbyte buffer[T*N*3];
@@ -133,8 +135,12 @@ static int make_resources() {
 		sizeof(g_element_buffer_data));
 
 	g_resources.textures[0] = make_texture(buffer);
-
 	if (g_resources.textures[0] == 0 ) {
+		return 0;
+	}
+
+	g_resources.lut = make_lut();
+	if (g_resources.lut == 0 ) {
 		return 0;
 	}
 
@@ -155,6 +161,9 @@ static int make_resources() {
 
 	g_resources.uniforms.textures[0] =
 		glGetUniformLocation(g_resources.program, "textures[0]");
+
+	g_resources.uniforms.lut =
+		glGetUniformLocation(g_resources.program, "lut");
 
 	g_resources.attributes.position =
 		glGetAttribLocation(g_resources.program, "position");
@@ -180,6 +189,10 @@ static void render(void)
 	}
 */
 	glUseProgram(g_resources.program);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_1D, g_resources.lut);
+	glUniform1i(g_resources.uniforms.lut, 0);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, g_resources.textures[0]);
@@ -253,12 +266,12 @@ static GLuint make_shader(GLenum type, const char *filename) {
 	glCompileShader(shader);
 
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &shader_ok);
-	if (!shader_ok) {
-		fprintf(stderr, "Failed to compile %s:\n", filename);
+//	if (!shader_ok) {
+//		fprintf(stderr, "Failed to compile %s:\n", filename);
 		show_info_log(shader, glGetShaderiv, glGetShaderInfoLog);
-		glDeleteShader(shader);
-		return 0;
-	}
+//		glDeleteShader(shader);
+//		return 0;
+//	}
 
 	return shader;
 }
@@ -314,7 +327,7 @@ void *file_contents(const char *filename, GLint *length) {
 	return buffer;
 }
 
-/*static GLuint make_lut()
+static GLuint make_lut()
 {
 	unsigned char *lutData = malloc(1024);
 	FILE *f = fopen("hotiron.bin", "rb");
@@ -346,4 +359,4 @@ void *file_contents(const char *filename, GLint *length) {
         glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
 	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, 256, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, lutData);
 	return texture;
-}*/
+}
