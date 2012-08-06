@@ -3,6 +3,7 @@
 #include <string.h>
 #include <GL/glew.h>
 #include <sys/time.h>
+#include <time.h>
 #ifdef __APPLE__
 #	include <GLUT/glut.h>
 #else
@@ -13,7 +14,7 @@
 
 extern void glutMainLoopEvent(void);
 
-#define T 1024
+#define T 2560
 
 static void render();
 static int make_resources();
@@ -65,9 +66,11 @@ static const GLushort g_element_buffer_data[] = {0, 1, 2, 3};
 
 buf *b; 
 int main(int argc, char **argv) {
+	srand(time(NULL));
+
 	b = malloc(sizeof(buf));
-	b->data = malloc(sizeof(uint16_t) * 512);
-	b->length = 512;
+	b->data = malloc(sizeof(uint16_t) * N);
+	b->length = N;
 	memset(b->data, 0, b->length);
 
 	memset(buffer, T*N*3, 0);
@@ -102,7 +105,7 @@ void sample(float cost) {
 	samples++;
 
 
-	if (samples % 4 != 0) { return; };
+	if (samples % 10 != 0) { return; };
 
 	for (int i = 0; i != b->length; i++) {
 		// New index = (3 * i) + (3 * T)
@@ -119,8 +122,10 @@ void sample(float cost) {
 		t = 0;
 	}
 
-	glutMainLoopEvent();
-	glutPostRedisplay();
+	if (samples % 20 == 0) {
+		glutMainLoopEvent();
+		glutPostRedisplay();
+	}
 }
 
 static int make_resources() {
