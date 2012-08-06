@@ -1,8 +1,19 @@
+
+#if __STDC_VERSION__ >= 199901L
+#define _XOPEN_SOURCE 600
+#else
+#define _XOPEN_SOURCE 500
+#endif /* __STDC_VERSION__ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <GL/glew.h>
 #include <sys/time.h>
+
+#include <ucontext.h>
+#include <unistd.h>
+
 #ifdef __APPLE__
 #	include <GLUT/glut.h>
 #else
@@ -10,6 +21,8 @@
 #endif
 
 #include "sort.h"
+
+#define _GNU_SOURCE
 
 extern void glutMainLoopEvent(void);
 
@@ -30,9 +43,13 @@ static void show_info_log(
 		PFNGLGETSHADERIVPROC glGet__iv,
 		PFNGLGETSHADERINFOLOGPROC glGet__InfoLog);
 void *file_contents(const char *filename, GLint *length);
+void draw();
 
 unsigned short t = 0;
 GLbyte buffer[T*N*3];
+
+ucontext_t sortcontext;
+ucontext_t normalcontext;
 
 static struct {
 	GLuint vertex_buffer, element_buffer;
@@ -72,6 +89,13 @@ int main(int argc, char **argv) {
 
 	memset(buffer, T*N*3, 0);
 
+	getcontext(&sortcontext);
+	sortcontext.uc_link = &normalcontext;
+	sortcontext.uc_stack.ss_sp = malloc(1024 * 512);
+	sortcontext.uc_stack.ss_size = 1024 * 512;
+	sortcontext.uc_stack.ss_flags = 0;
+	makecontext(&sortcontext, &run_sorts, 1, b);
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(T, N);
@@ -89,9 +113,15 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	run_sorts(b);
+	//run_sorts(b);
+
 	//glutMainLoop();
+	getcontext(&normalcontext);
 	printf("Done.\n");
+
+	while(1) {
+		draw();
+	}
 
 	return 0;
 }
@@ -121,6 +151,12 @@ void sample(float cost) {
 
 	glutMainLoopEvent();
 	glutPostRedisplay();
+
+	swapcontext(&sortcontext, &normalcontext);
+}
+
+void draw() {
+	swapcontext(&normalcontext, &sortcontext);
 }
 
 static int make_resources() {
