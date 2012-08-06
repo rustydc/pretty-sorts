@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 #ifdef __APPLE__
 #	include <GLUT/glut.h>
 #else
@@ -40,14 +41,20 @@ void fisher_yates_shuffle(buf *b, int low, int high) {
 	}
 }
 
+void reverse(buf *b, int low, int high) {
+	for (int i = 0; i < ((high - low) / 2); i++) {
+		swap(b, low+i, high-i);
+	}
+}
+
 // Put each element either above or below the first element.
 int partition(buf *buf, int low, int high) {
-	int val, store, i;
-	val = buf->data[low];
+	int store, i;
 	swap(buf, low, high);
 	store = low;
 	for (i = low; i < high; i++) {
-		if (buf->data[i] < val) {
+		if (!compare(buf, high, i)) {
+//		if (buf->data[i] < val) {
 			swap(buf, i, store++);
 		}
 	}
@@ -56,12 +63,12 @@ int partition(buf *buf, int low, int high) {
 }
 
 // Partition the range from 'low' to 'high', and quick-sort each.
-void quick_sort(buf *buf, int low, int high) {
+void quicksort(buf *buf, int low, int high) {
 	int pivot;
 	if (low < high) {
 		pivot = partition(buf, low, high);
-		quick_sort(buf, low, pivot - 1);
-		quick_sort(buf, pivot + 1, high);
+		quicksort(buf, low, pivot - 1);
+		quicksort(buf, pivot + 1, high);
 	}
 }
 
@@ -124,9 +131,9 @@ void bogo_sort(buf *buf, int low, int high) {
 	}
 }
 
-int parent(int i) { return floor((i-1)/2); }
-int left(int i) { return 2 * i + 1; }
-int right(int i) { return 2 * i + 2; }
+int parent(int i) { return (i-1) / 2; }
+int left(  int i) { return 2*i + 1;   }
+int right( int i) { return 2*i + 2;   }
 
 void sift_down(buf *buf, int low, int high, int node) {
 	while ( left(node) <= high ) {
@@ -170,30 +177,28 @@ int main (int argc, char **argv) {
 
 void run_sorts(buf *buf) {
 	fill(buf);
-	fisher_yates_shuffle(buf, 0, buf->length-1);
 
 	while(1) {
 		int r = rand_from(0, 3);
+
+		fisher_yates_shuffle(buf, 0, buf->length-1);
+
 		switch (r) {
 		case 0:
 			printf("Insertion Sort.\n");
 			insertion_sort(buf, 0, buf->length-1);
-			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		case 1:
 			printf("Quick Sort.\n");
-			quick_sort(buf, 0, buf->length-1);
-			fisher_yates_shuffle(buf, 0, buf->length-1);
+			quicksort(buf, 0, buf->length-1);
 			break;
 		case 2:
 			printf("Heap Sort.\n");
 			heap_sort(buf, 0, buf->length-1);
-			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		case 3:
 			printf("Selection Sort.\n");
 			selection_sort(buf, 0, buf->length-1);
-			fisher_yates_shuffle(buf, 0, buf->length-1);
 			break;
 		}
 	}

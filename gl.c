@@ -10,10 +10,9 @@
 #include <string.h>
 #include <GL/glew.h>
 #include <sys/time.h>
-
 #include <ucontext.h>
 #include <unistd.h>
-
+#include <time.h>
 #ifdef __APPLE__
 #	include <GLUT/glut.h>
 #else
@@ -26,7 +25,11 @@
 
 extern void glutMainLoopEvent(void);
 
-#define T 1024
+#define T 512
+#define N 512
+
+void draw();
+void init();
 
 static void render();
 static int make_resources();
@@ -42,14 +45,8 @@ static void show_info_log(
 		GLuint object,
 		PFNGLGETSHADERIVPROC glGet__iv,
 		PFNGLGETSHADERINFOLOGPROC glGet__InfoLog);
-void *file_contents(const char *filename, GLint *length);
-void draw();
+static void *file_contents(const char *filename, GLint *length);
 
-unsigned short t = 0;
-GLbyte buffer[T*N*3];
-
-ucontext_t sortcontext;
-ucontext_t normalcontext;
 
 static struct {
 	GLuint vertex_buffer, element_buffer;
@@ -58,6 +55,7 @@ static struct {
 	GLuint vertex_shader, fragment_shader, program;
 
 	GLbyte buffer[T*N*3];
+	unsigned short t;
 
 	struct {
 		GLint textures[1];
@@ -70,6 +68,11 @@ static struct {
 	} attributes;
 
 	float offset;
+
+	ucontext_t sortcontext;
+	ucontext_t normalcontext;
+
+	buf *b; 
 } g_resources;
 
 static const GLfloat g_vertex_buffer_data[] = {
@@ -80,21 +83,23 @@ static const GLfloat g_vertex_buffer_data[] = {
 };
 static const GLushort g_element_buffer_data[] = {0, 1, 2, 3};
 
-buf *b; 
+
 int main(int argc, char **argv) {
-	b = malloc(sizeof(buf));
-	b->data = malloc(sizeof(uint16_t) * 512);
-	b->length = 512;
-	memset(b->data, 0, b->length);
+	srand(time(NULL));
 
-	memset(buffer, T*N*3, 0);
+	g_resources.b = malloc(sizeof(buf));
+	g_resources.b->data = malloc(sizeof(uint16_t) * N);
+	g_resources.b->length = N;
+	memset(g_resources.b->data, 0, g_resources.b->length);
 
-	getcontext(&sortcontext);
-	sortcontext.uc_link = &normalcontext;
-	sortcontext.uc_stack.ss_sp = malloc(1024 * 512);
-	sortcontext.uc_stack.ss_size = 1024 * 512;
-	sortcontext.uc_stack.ss_flags = 0;
-	makecontext(&sortcontext, &run_sorts, 1, b);
+	memset(g_resources.buffer, T*N*3, 0);
+
+	getcontext(&(g_resources.sortcontext));
+	g_resources.sortcontext.uc_link = &(g_resources.normalcontext);
+	g_resources.sortcontext.uc_stack.ss_sp = malloc(1024 * 512);
+	g_resources.sortcontext.uc_stack.ss_size = 1024 * 512;
+	g_resources.sortcontext.uc_stack.ss_flags = 0;
+	makecontext(&(g_resources.sortcontext), &run_sorts, 1, g_resources.b);
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -116,7 +121,7 @@ int main(int argc, char **argv) {
 	//run_sorts(b);
 
 	//glutMainLoop();
-	getcontext(&normalcontext);
+	getcontext(&(g_resources.normalcontext));
 	printf("Done.\n");
 
 	while(1) {
@@ -132,31 +137,32 @@ void sample(float cost) {
 	samples++;
 
 
-	if (samples % 4 != 0) { return; };
+	if (samples % 10 != 0) { return; };
 
-	for (int i = 0; i != b->length; i++) {
+	for (int i = 0; i != g_resources.b->length; i++) {
 		// New index = (3 * i) + (3 * T)
 		//int index = 3 * ((t+1)%T) + 3 * i * b->length;
-		int index = 3 * ((t+1)%T) + 3 * i * T;
-		float scale = (float)256/(b->length);
+		int index = 3 * ((g_resources.t+1)%T) + 3 * i * T;
+		float scale = (float)256/(g_resources.b->length);
 		// Copy each short to an RGB triple.
-		buffer[index] = b->data[i] * scale;
-		buffer[index+1] = b->data[i] * scale;
-		buffer[index+2] = b->data[i] * scale;
+		g_resources.buffer[index] = g_resources.b->data[i] * scale;
+		g_resources.buffer[index+1] = g_resources.b->data[i] * scale;
+		g_resources.buffer[index+2] = g_resources.b->data[i] * scale;
 	}
 
-	if (++t == T) {
-		t = 0;
+	if (++g_resources.t == T) {
+		g_resources.t = 0;
 	}
 
-	glutMainLoopEvent();
-	glutPostRedisplay();
-
-	swapcontext(&sortcontext, &normalcontext);
+	if (samples % 20 == 0) {
+		glutMainLoopEvent();
+		glutPostRedisplay();
+		swapcontext(&(g_resources.sortcontext), &(g_resources.normalcontext));
+	}
 }
 
 void draw() {
-	swapcontext(&normalcontext, &sortcontext);
+	swapcontext(&(g_resources.normalcontext), &(g_resources.sortcontext));
 }
 
 static int make_resources() {
@@ -170,7 +176,7 @@ static int make_resources() {
 		g_element_buffer_data,
 		sizeof(g_element_buffer_data));
 
-	g_resources.textures[0] = make_texture(buffer);
+	g_resources.textures[0] = make_texture(g_resources.buffer);
 	if (g_resources.textures[0] == 0 ) {
 		return 0;
 	}
@@ -210,20 +216,8 @@ static int make_resources() {
 	return 1;
 }
 
-struct timeval start, end;
-int numFrames = 0;
-
 static void render(void)
 {
-/*	if (numFrames++ == 100) {
-		gettimeofday(&end, NULL);
-		printf("FPS: %f\n", 1000000.0 * 100.0 / ((end.tv_sec * 1000000 + end.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec)) ) ;
-		numFrames = 0;
-	}
-	if (numFrames == 0) {
-		gettimeofday(&start, NULL);
-	}
-*/
 	glUseProgram(g_resources.program);
 
 	glActiveTexture(GL_TEXTURE1);
@@ -234,10 +228,10 @@ static void render(void)
 	glBindTexture(GL_TEXTURE_2D, g_resources.textures[0]);
 	glUniform1i(g_resources.uniforms.textures[0], 0);
 
-	g_resources.offset = ((float) t) / T;
+	g_resources.offset = ((float) g_resources.t) / T;
 	glUniform1f(g_resources.uniforms.offset, g_resources.offset);
 
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, T, N, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, T, N, GL_RGB, GL_UNSIGNED_BYTE, g_resources.buffer);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, g_resources.vertex_buffer);
 	glVertexAttribPointer(
@@ -343,7 +337,7 @@ static GLuint make_program(GLuint vertex_shader, GLuint fragment_shader) {
 	return program;
 }
 
-void *file_contents(const char *filename, GLint *length) {
+static void *file_contents(const char *filename, GLint *length) {
 	FILE *f = fopen(filename, "r");
 	void *buffer;
 

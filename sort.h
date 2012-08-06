@@ -1,8 +1,6 @@
 #ifndef __SORT_H__
 #define __SORT_H__
 
-#define N 512
-
 #include <inttypes.h>
 
 typedef struct buf_s {
