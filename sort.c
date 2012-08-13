@@ -16,7 +16,6 @@ extern void sample(float cost);
 
 // Return 0 if they're out of order.
 int compare(buf *buf, int a, int b) {
-	//sample(1.0);
 	return buf->data[b] - buf->data[a] >= 0;
 }
 
@@ -54,7 +53,6 @@ int partition(buf *buf, int low, int high) {
 	store = low;
 	for (i = low; i < high; i++) {
 		if (!compare(buf, high, i)) {
-//		if (buf->data[i] < val) {
 			swap(buf, i, store++);
 		}
 	}
@@ -80,16 +78,25 @@ void fill(buf *buf) {
 }
 
 // Move a value through a sorted list into its place.
+// TODO: obsolete this.
 void insert(buf *buf, int a, int b) {
 	int i, val = buf->data[b];
 	for (i = b - 1; i >= a && buf->data[i] > val; i--) {
 		buf->data[i + 1] = buf->data[i];
-		buf->data[i] = val;
 	}
 	buf->data[i + 1] = val;
-	sample(1.0);
-	sample(1.0);
-	sample(1.0);
+
+	for (i = 0; i != (b-a)/10; i++) { sample(1.0); }
+}
+
+void insert2(buf *buf, int a, int b) {
+	int i, val = buf->data[b];
+	for (i = b - 1; i >= a; i--) {
+		buf->data[i + 1] = buf->data[i];
+	}
+	buf->data[i + 1] = val;
+
+	for (i = 0; i != (b-a)/10; i++) { sample(1.0); }
 }
 
 void insertion_sort(buf *buf, int low, int high) {
@@ -169,17 +176,29 @@ void heap_sort(buf *buf, int low, int high) {
 	}
 }
 
-/*
-int main (int argc, char **argv) {
-	run_sorts();
-	return 0;
-}*/
+void merge_sort(buf *buf, int low, int high) {
+	int mid = low + (high - low) / 2 + 1;
+
+	if (high <= low) { return; }
+
+	merge_sort(buf, low, mid-1);
+	merge_sort(buf, mid, high);
+
+	while (low <= mid && mid <= high) {
+		if (compare(buf, low, mid)) {
+			low++;
+		} else {
+			insert2(buf, low, mid);
+			mid++;
+		}
+	}
+}
 
 void run_sorts(buf *buf) {
 	fill(buf);
 
 	while(1) {
-		int r = rand_from(0, 3);
+		int r = rand_from(0, 4);
 
 		fisher_yates_shuffle(buf, 0, buf->length-1);
 
@@ -199,6 +218,10 @@ void run_sorts(buf *buf) {
 		case 3:
 			printf("Selection Sort.\n");
 			selection_sort(buf, 0, buf->length-1);
+			break;
+		case 4:
+			printf("Merge Sort.\n");
+			merge_sort(buf, 0, buf->length-1);
 			break;
 		}
 	}
