@@ -108,7 +108,7 @@ void insertion_sort(buf *buf, int low, int high) {
 int select_min(buf *buf, int low, int high) {
 	int min = low;
 	for (int i = low + 1; i <= high; i++) {
-		if (!compare(buf, i, min)) {
+		if (!compare(buf, min, i)) {
 			min = i;
 		}
 	}
