@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 	g_resources.b->length = N;
 	memset(g_resources.b->data, 0, g_resources.b->length);
 
-	memset(g_resources.buffer, T*N*3, 0);
+	memset(g_resources.buffer, 0, T*N*3);
 
 	getcontext(&(g_resources.sortcontext));
 	g_resources.sortcontext.uc_link = &(g_resources.normalcontext);
